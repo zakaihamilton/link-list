@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   DndContext,
   closestCenter,
@@ -171,7 +171,6 @@ export default function App() {
   const [jsonString, setJsonString] = useState('');
   const [jsonError, setJsonError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const mounted = useRef(false);
 
   // DnD Sensors
   const sensors = useSensors(
@@ -183,21 +182,20 @@ export default function App() {
     })
   );
 
-  // Sync JSON string when data changes (and editor is closed)
-  useEffect(() => {
-    mounted.current = true;
+  // Handlers
+  const toggleJsonEditor = () => {
     if (!isJsonOpen) {
-      // Combine title and items into one object for the JSON representation
+      // Sync JSON string when opening editor
       const data = {
         title: title,
         items: links
       };
       setJsonString(JSON.stringify(data, null, 2));
+      setJsonError(null);
     }
-    return () => { mounted.current = false; };
-  }, [links, title, isJsonOpen]);
+    setIsJsonOpen(!isJsonOpen);
+  };
 
-  // Handlers
   const addLink = () => {
     const newLink = { id: crypto.randomUUID(), label: '', url: '' };
     setLinks((items) => [...items, newLink]);
@@ -434,7 +432,7 @@ export default function App() {
       >
         {/* Drawer Handle / Toggle Bar */}
         <div
-          onClick={() => setIsJsonOpen(!isJsonOpen)}
+          onClick={toggleJsonEditor}
           className="h-12 bg-gray-800 border-t border-gray-700 flex items-center justify-between px-6 cursor-pointer hover:bg-gray-750 transition-colors"
         >
           <div className="flex items-center gap-2 font-mono text-sm text-blue-400">
